@@ -1,84 +1,96 @@
 #!/usr/bin/python3
-import random
-import os
+"""
+checkbook.py
 
-def clear_screen():
-    os.system('cls' if os.name == 'nt' else 'clear')
+Ce script simule un carnet de chèques (checkbook) simple.
+Il permet à un utilisateur de :
+- déposer de l'argent
+- retirer de l'argent
+- consulter le solde
+via une interface en ligne de commande.
+"""
 
-class Minesweeper:
-    def __init__(self, width=10, height=10, mines=10):
-        self.width = width
-        self.height = height
-        self.mines = set(random.sample(range(width * height), mines))
-        self.revealed = [[False for _ in range(width)] for _ in range(height)]
+class Checkbook:
+    """
+    Classe représentant un carnet de chèques.
+    Elle gère un solde et des opérations bancaires de base.
+    """
 
-    def print_board(self, reveal=False):
-        clear_screen()
-        print('  ' + ' '.join(str(i) for i in range(self.width)))
-        for y in range(self.height):
-            print(y, end=' ')
-            for x in range(self.width):
-                if reveal or self.revealed[y][x]:
-                    if (y * self.width + x) in self.mines:
-                        print('*', end=' ')
-                    else:
-                        count = self.count_mines_nearby(x, y)
-                        print(count if count > 0 else ' ', end=' ')
-                else:
-                    print('.', end=' ')
-            print()
+    def __init__(self):
+        """
+        Initialise un nouveau carnet de chèques avec un solde à 0.
+        """
+        self.balance = 0.0
 
-    def count_mines_nearby(self, x, y):
-        count = 0
-        for dx in [-1, 0, 1]:
-            for dy in [-1, 0, 1]:
-                if dx == 0 and dy == 0:
-                    continue
-                nx, ny = x + dx, y + dy
-                if 0 <= nx < self.width and 0 <= ny < self.height:
-                    if (ny * self.width + nx) in self.mines:
-                        count += 1
-        return count
+    def deposit(self, amount):
+        """
+        Dépose un montant sur le compte.
 
-    def reveal(self, x, y):
-        if not (0 <= x < self.width and 0 <= y < self.height):
-            return True
+        Paramètre:
+            amount (float): montant à ajouter au solde
+        """
+        self.balance += amount
+        print("Deposited ${:.2f}".format(amount))
+        print("Current Balance: ${:.2f}".format(self.balance))
 
-        if self.revealed[y][x]:
-            return True
+    def withdraw(self, amount):
+        """
+        Retire un montant du compte si le solde est suffisant.
 
-        if (y * self.width + x) in self.mines:
-            return False
+        Paramètre:
+            amount (float): montant à retirer
+        """
+        if amount > self.balance:
+            # Cas où le solde est insuffisant
+            print("Insufficient funds to complete the withdrawal.")
+        else:
+            self.balance -= amount
+            print("Withdrew ${:.2f}".format(amount))
+            print("Current Balance: ${:.2f}".format(self.balance))
 
-        self.revealed[y][x] = True
+    def get_balance(self):
+        """
+        Affiche le solde actuel du compte.
+        """
+        print("Current Balance: ${:.2f}".format(self.balance))
 
-        if self.count_mines_nearby(x, y) == 0:
-            for dx in [-1, 0, 1]:
-                for dy in [-1, 0, 1]:
-                    nx, ny = x + dx, y + dy
-                    if 0 <= nx < self.width and 0 <= ny < self.height:
-                        if not self.revealed[ny][nx]:
-                            self.reveal(nx, ny)
-        return True
 
-    def check_win(self):
-        for y in range(self.height):
-            for x in range(self.width):
-                if (y * self.width + x) not in self.mines and not self.revealed[y][x]:
-                    return False
-        return True
+def main():
+    """
+    Fonction principale du programme.
+    Elle gère l'interaction avec l'utilisateur et les commandes.
+    """
+    cb = Checkbook()
 
-    def play(self):
-        while True:
-            self.print_board()
-            try:
-                x = int(input("Enter x coordinate: "))
-                y = int(input("Enter y coordinate: "))
+    # Boucle principale du programme
+    while True:
+        action = input(
+            "What would you like to do? (deposit, withdraw, balance, exit): "
+        )
 
-                if not self.reveal(x, y):
-                    self.print_board(reveal=True)
-                    print("💥 Game Over! You hit a mine.")
-                    break
+        if action.lower() == 'exit':
+            # Quitte le programme
+            break
 
-                if self.check_win():
-                    self.print_board(reveal=True)
+        elif action.lower() == 'deposit':
+            # Dépôt d'argent
+            amount = float(input("Enter the amount to deposit: $"))
+            cb.deposit(amount)
+
+        elif action.lower() == 'withdraw':
+            # Retrait d'argent
+            amount = float(input("Enter the amount to withdraw: $"))
+            cb.withdraw(amount)
+
+        elif action.lower() == 'balance':
+            # Affichage du solde
+            cb.get_balance()
+
+        else:
+            # Commande inconnue
+            print("Invalid command. Please try again.")
+
+
+# Point d’entrée du script
+if __name__ == "__main__":
+    main()
